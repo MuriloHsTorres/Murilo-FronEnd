@@ -1,0 +1,52 @@
+/* src/pages/ContasPage.module.css */
+
+/* Uma grelha que se adapta ao tamanho da tela */
+.grid {
+  display: grid;
+  /* Cria colunas de no mínimo 280px */
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+}
+
+/* O estilo de cada "Card" de Conta */
+.contaCard {
+  background-color: var(--cor-branco);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 20px;
+  transition: var(--transition);
+  /* Borda verde (do seu tema) */
+  border-left: 5px solid var(--primary-color); 
+}
+
+.contaCard:hover {
+  transform: translateY(-5px); /* Efeito de "levantar" */
+  box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+}
+
+/* O Nome da Conta (ex: "Carteira") */
+.cardNome {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--primary-color); /* Verde */
+  margin-bottom: 5px;
+}
+
+/* O Tipo da Conta (ex: "conta corrente") */
+.cardTipo {
+    font-size: 0.85rem;
+    color: #6c757d;
+    margin-bottom: 15px;
+    text-transform: capitalize; /* Deixa a primeira letra maiúscula */
+}
+
+/* O Saldo da Conta */
+.cardSaldo {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--dark-color);
+}

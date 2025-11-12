@@ -1,0 +1,92 @@
+/* src/components/MainLayout.module.css */
+
+/* O "invólucro" que divide a tela */
+.layoutContainer {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* A Barra Lateral (Sidebar) */
+.sidebar {
+  width: 260px;
+  background-color: var(--cor-branco);
+  border-right: 1px solid var(--cor-borda);
+  box-shadow: var(--box-shadow);
+  display: flex;
+  flex-direction: column;
+  position: fixed; /* Fixa a sidebar */
+  height: 100%;
+  z-index: 100; /* Garante que fica por cima */
+}
+
+/* A Área de Conteúdo Principal (onde as páginas vão) */
+.mainContent {
+  flex-grow: 1; /* Ocupa o resto do espaço */
+  padding: 25px;
+  background-color: var(--light-color);
+  margin-left: 260px; /* O espaço para a sidebar fixa */
+}
+
+/* O Logo (baseado no seu style.css) */
+.logoArea {
+  padding: 1.5rem 1.25rem;
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.logoLink {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--primary-color); /* Verde */
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+}
+
+/* A Navegação (Abas) */
+.navArea {
+  flex-grow: 1; /* Empurra o userArea para baixo */
+  padding: 1rem 0;
+}
+
+/* O container das abas (baseado no .nav-tabs do seu style.css) */
+.navTabs {
+  display: flex;
+  flex-direction: column; /* Faz as abas ficarem verticais */
+  list-style: none;
+  padding-left: 0;
+}
+
+.navLink {
+  display: block;
+  padding: 0.75rem 1.25rem;
+  color: var(--dark-color);
+  text-decoration: none;
+  font-weight: 500;
+  border-left: 4px solid transparent; /* Borda de "ativo" */
+  transition: var(--transition);
+}
+
+.navLink:hover {
+  background-color: #f0fdf9; /* Verde bem claro */
+  color: var(--primary-color);
+}
+
+/* O ESTADO ATIVO! */
+.navLink.active {
+  color: var(--primary-color);
+  font-weight: 700;
+  border-left-color: var(--primary-color);
+  background-color: #e6f6f2; /* Verde claro */
+}
+
+/* Área do Utilizador (no fundo da sidebar) */
+.userArea {
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--cor-borda);
+}
+
+.userArea span {
+  font-weight: 600;
+  display: block;
+  margin-bottom: 10px;
+}

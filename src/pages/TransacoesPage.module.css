@@ -1,0 +1,93 @@
+/* src/pages/TransacoesPage.module.css */
+
+.listContainer {
+  margin-top: 20px;
+}
+
+.transactionList {
+  list-style: none;
+  padding: 0;
+}
+
+/* O "Card" de cada transação */
+.transactionItem {
+  background-color: var(--cor-branco);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--border-radius);
+  box-shadow: var(--box-shadow);
+  padding: 15px 20px;
+  margin-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  transition: var(--transition);
+}
+
+.transactionItem:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 0.2rem 0.4rem rgba(0,0,0,0.1);
+}
+
+/* Detalhes (Categoria, Descrição, Conta) */
+.itemDetails {
+  flex-grow: 1;
+}
+
+.itemCategory {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--primary-color); /* Verde */
+}
+
+.itemDescription {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin: 2px 0;
+}
+
+.itemAccount {
+  font-size: 0.85rem;
+  color: #495057;
+  font-style: italic;
+}
+
+/* Wrapper para Valor e Data (à direita) */
+.itemAmountDateWrapper {
+  text-align: right;
+  min-width: 150px;
+}
+
+.itemAmount {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.amountPositive {
+  color: var(--success-color); /* Verde Claro */
+}
+
+.amountNegative {
+  color: var(--danger-color); /* Vermelho */
+}
+
+.itemDate {
+  font-size: 0.85rem;
+  color: #6c757d;
+}
+
+/* Botão de Deletar (que já tínhamos) */
+.deleteButton {
+  background-color: transparent;
+  border: 1px solid var(--danger-color);
+  color: var(--danger-color);
+  font-size: 0.8rem;
+  padding: 2px 6px;
+  border-radius: var(--border-radius);
+  margin-top: 8px;
+  cursor: pointer;
+}
+
+.deleteButton:hover {
+  background-color: var(--danger-color);
+  color: var(--cor-branco);
+}

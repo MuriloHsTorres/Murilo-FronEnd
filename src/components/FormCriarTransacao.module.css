@@ -1,0 +1,33 @@
+/* src/components/FormCriarTransacao.module.css */
+
+/* O "Card" do formulário (sem mudança) */
+.formCard {
+  background-color: var(--cor-branco);
+  padding: 20px;
+  border-radius: var(--border-radius);
+  border: 1px solid var(--cor-borda);
+  box-shadow: var(--box-shadow);
+  margin-top: 15px;
+  margin-bottom: 25px;
+}
+
+/* Espaçamento dos campos (sem mudança) */
+.formCard > div {
+  margin-bottom: 15px; 
+}
+
+/* --- NOVOS ESTILOS (para a sua lógica) --- */
+
+/* O wrapper para "Nova Categoria" (Input + Botão Cancelar) */
+.newCategoryWrapper {
+  display: flex;
+  gap: 10px;
+}
+
+.newCategoryWrapper input {
+  flex-grow: 1; /* O input ocupa o máximo de espaço */
+}
+
+.newCategoryWrapper button {
+  flex-shrink: 0; /* O botão não encolhe */
+}
