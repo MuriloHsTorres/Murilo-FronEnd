@@ -2,7 +2,7 @@
 /* === AJUSTES FINAIS LOGIN/REGISTRO === */
 /* ============================================== */
 :root {
-    --primary-color: #00DF82;
+    --primary-color: #00df82;
     --success-color: #5dd62c;
     --danger-color: #df0139;
     --warning-color: #ffc107;
@@ -124,6 +124,7 @@
   width: 100%;
   height: 56px;
   padding-left: 16px; /* Padding interno */
+  padding-right: 16px;
   border-radius: var(--border-radius);
   border: 2px solid gray;
   font-size: 16px;
@@ -159,46 +160,106 @@
 }
 
 .btn-secondary {
-  width: 15%;
+  width: 25%;
   height: 56px;
-  /* O botão nas imagens é verde-claro (success) */
-  background-color: #00000000; /* */
+  /* O botão nas imagens é verde-claro (success)  /* */
   border: none;
   font-size: 18px;
-  color: #afafaf;
+  color: rgb(150, 150, 150);
   border-radius: 8px;
   font-weight: 600;
-  
-  margin: 10px 10px 0;
+  background-color: #ffffff26;
 
-  transition: 300ms;
+
+  margin: 0;
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.166);
+  
+  transition: 500ms;
 }
 
 .btn-secondary:hover {
-  background-color: #afafaf; /* Um tom mais escuro */
+  background-color: var(--light-color); /* Um tom mais escuro */
   border-color: none;
   transition: 300ms;
-  color: white;
+  color: var(--primary-color);
+  font-size: 17.5px;
+
+
+  box-shadow: 0 0px 4px rgba(0, 0, 0, 0.12);
+
+  transition: 500ms;
+
+
+}
+
+.btn-margin{
+  margin: 10px 10px 0;
+  width: 20%;
+}
+
+.btn-sair {
+  width: 15%;
+  height: 40px;
+  /* O botão nas imagens é verde-claro (success)  /* */
+  border: none;
+  font-size: 18px;
+  color: var(--danger-color);
+  border-radius: 8px;
+  font-weight: 600;
+  background-color: #ffffff26;
+
+
   
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.166);
+  
+  transition: 500ms;
+}
+
+.btn-sair:hover {
+  background-color: var(--danger-color); /* Um tom mais escuro */
+  border-color: none;
+  transition: 300ms;
+  color: var(--light-color);
+  font-size: 17.5px;
+
+
+  box-shadow: 0 0px 4px rgba(0, 0, 0, 0.12);
+
+  transition: 500ms;
+
+
 }
 
 .btn-home {
-  margin: 10px;
+
+  margin: 20px 10px 10px 10px;
 
   width: 30%;
-  height: 56px;
+  height: 40px;
   /* O botão nas imagens é verde-claro (success) */
-  background-color: var(--primary-color); /* */
-  border: none;
+ border: none;
   font-size: 18px;
-  color: white;
+  color: rgb(150, 150, 150);
   border-radius: 8px;
   font-weight: 600;
+  background-color: #ffffff26;
+
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.166);
+  
+  transition: 500ms;
 }
 
 .btn-home:hover {
-  background-color: #0fc77a; /* Um tom mais escuro */
+  background-color: var(--light-color); /* Um tom mais escuro */
   border-color: none;
+  transition: 300ms;
+  color: var(--primary-color);
+  font-size: 17.5px;
+
+
+  box-shadow: 0 0px 4px rgba(0, 0, 0, 0.12);
+
+  transition: 500ms;
 }
 
 /* 8. Links "ir para Cadastro" / "ir para Login" (Formatação) */
@@ -447,6 +508,7 @@
 
 /* 1. Cabeçalho da Página (ex: "Gestão de Metas") */
 .page-header {
+  padding: 15px 10px 0px 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -895,3 +957,237 @@
   background-color: var(--danger-color);
   color: white;
  }
+
+ /* --- Grid de Contas --- */
+.contas-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* Responsivo */
+  gap: 1.5rem;
+  list-style: none;
+  padding: 0;
+  margin-top: 2rem;
+}
+
+.conta-card {
+  background: var(--light-color); /* Fundo escuro */
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 1.5rem;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 160px;
+}
+
+.conta-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+  border-color: var(--primary-color);
+}
+
+.conta-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.conta-nome {
+  font-size: 1.3rem;
+  font-weight: bold;
+  color: var(--dark-color);
+}
+
+.conta-tipo {
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  background: rgb(224, 224, 224);
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: #aaa;
+}
+
+.conta-saldo {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+
+/* --- Botões de Ação no Card --- */
+.conta-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: auto; /* Empurra para o fundo */
+}
+
+.btn-editar {
+  background-color: var(--warning-color); /* Amarelo */
+  color: #000;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  flex: 1;
+  font-weight: bold;
+}
+
+.btn-excluir {
+  background-color: transparent;
+  color: #e74c3c;
+  border: 1px solid #e74c3c;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.btn-excluir:hover {
+  background-color: #e74c3c;
+  color: white;
+}
+
+/* --- Modal (Popup) de Edição --- */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: var(--light-color);
+  padding: 2rem;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 400px;
+  border: 1px solid var(--light-color);
+  box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 1.5rem;
+}
+
+
+
+
+
+
+
+
+
+
+.metas-list-wide {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem; /* Espaço entre cada meta */
+}
+
+/* O Cartão da Meta */
+.meta-wide-card {
+  background-color: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  width: 100%; /* Ocupa tudo horizontalmente */
+  box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease;
+}
+
+.meta-wide-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+}
+
+/* Cabeçalho (Nome e Valores) */
+.meta-wide-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 10px;
+}
+
+.meta-title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #333;
+}
+
+.meta-values {
+  font-family: monospace, sans-serif;
+}
+
+.valor-atual {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #2ecc71; /* Verde */
+}
+
+.valor-alvo {
+  font-size: 1rem;
+  color: #888;
+}
+
+/* Área da Barra de Progresso */
+.meta-progress-wrapper {
+  margin-bottom: 1rem;
+}
+
+/* Sobrescrevendo o componente ProgressBar para ficar GROSSO */
+/* Assumindo que seu ProgressBar usa uma div externa e interna */
+.meta-progress-wrapper > div { 
+  height: 25px !important; /* Força altura maior */
+  border-radius: 12px !important;
+  background-color: #eee !important;
+}
+.meta-progress-wrapper > div > div {
+  border-radius: 12px !important;
+  /* Opcional: Gradiente bonito na barra */
+  background: linear-gradient(90deg, #2ecc71, #27ae60) !important; 
+}
+
+/* Botões de Ação */
+.meta-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-action {
+  flex: 1; /* Botões dividem o espaço igualmente */
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.btn-deposit { background-color: #e8f5e9; color: #2ecc71; }
+.btn-deposit:hover { background-color: #c8e6c9; }
+
+.btn-withdraw { background-color: #ffebee; color: #e74c3c; }
+.btn-withdraw:hover { background-color: #ffcdd2; }
+
+.btn-cancel { background-color: #f5f5f5; color: #666; }
+.btn-cancel:hover { background-color: #e0e0e0; }
+
+/* Container do formulário interno */
+.meta-form-container {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px dashed #ccc;
+  background-color: #fafafa;
+  border-radius: 8px;
+  padding: 15px;
+}

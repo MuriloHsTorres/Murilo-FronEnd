@@ -1,8 +1,6 @@
-// src/context/DataContext.jsx
-
 import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import axios from 'axios';
-import { useAuth } from './AuthContext'; // Vamos precisar de saber quem está logado
+import { useAuth } from './AuthContext'; 
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
@@ -11,122 +9,128 @@ const DataContext = createContext(null);
 
 // 2. Criar o "Provedor"
 export function DataProvider({ children }) {
-  const { utilizador } = useAuth(); // Lê o utilizador logado
+  // --- CORREÇÃO PRINCIPAL AQUI ---
+  // Tentamos pegar 'user'. Se o seu AuthContext usa 'utilizador', nós renomeamos aqui para padronizar.
+  // Assim garantimos que funciona independentemente do nome lá.
+  const { user, utilizador } = useAuth();
+  
+  // Quem é o cliente logado? (Usa o que estiver disponível)
+  const usuarioLogado = user || utilizador; 
 
   // O nosso estado global de DADOS
   const [contas, setContas] = useState([]);
   const [metas, setMetas] = useState([]);
   const [transacoes, setTransacoes] = useState([]);
   const [categorias, setCategorias] = useState([]);
-  const [loading, setLoading] = useState(true); // Estado de "a carregar"
+  const [loading, setLoading] = useState(true); 
 
   // --- Funções de Fetch (Callbacks) ---
 
-  const fetchContas = useCallback(async (clienteId) => {
+  const fetchContas = useCallback(async (id) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/contas/cliente/${clienteId}`);
+      const response = await axios.get(`${API_BASE_URL}/contas/cliente/${id}`);
       setContas(response.data);
-      console.log('(DataCtx) Contas encontradas:', response.data);
+      console.log('✅ (DataCtx) Contas:', response.data.length);
     } catch (error) {
-      console.error('Erro ao buscar contas:', error);
+      console.error('❌ (DataCtx) Erro Contas:', error);
     }
   }, []);
 
-  const fetchMetas = useCallback(async (clienteId) => {
+  const fetchMetas = useCallback(async (id) => {
     try {
-      const response = await axios.get(`${API_BASE_URL}/metas/cliente/${clienteId}`);
+      const response = await axios.get(`${API_BASE_URL}/metas/cliente/${id}`);
       setMetas(response.data);
-      console.log('(DataCtx) Metas encontradas:', response.data);
     } catch (error) {
-      console.error('Erro ao buscar metas:', error);
+      console.error('❌ (DataCtx) Erro Metas:', error);
     }
   }, []);
 
-  const fetchTransacoes = useCallback(async (clienteId) => {
+  const fetchTransacoes = useCallback(async (id) => {
      try {
-      const response = await axios.get(`${API_BASE_URL}/transacoes/cliente/${clienteId}`);
+      const response = await axios.get(`${API_BASE_URL}/transacoes/cliente/${id}`);
       setTransacoes(response.data);
-      console.log('(DataCtx) Transações encontradas:', response.data);
     } catch (error) {
-      console.error('Erro ao buscar transações:', error);
+      console.error('❌ (DataCtx) Erro Transações:', error);
     }
   }, []);
 
-  const fetchCategorias = useCallback(async (clienteId) => {
+  const fetchCategorias = useCallback(async (id) => {
     try {
-      // O seu backend (CategoriaController) já lida com esta rota
-      const response = await axios.get(`${API_BASE_URL}/categorias/cliente/${clienteId}`);
+      const response = await axios.get(`${API_BASE_URL}/categorias/cliente/${id}`);
       setCategorias(response.data);
-      console.log('(DataCtx) Categorias encontradas:', response.data);
+      console.log('✅ (DataCtx) Categorias:', response.data.length);
     } catch (error) {
-      console.error('Erro ao buscar categorias:', error);
+      console.error('❌ (DataCtx) Erro Categorias:', error);
     }
   }, []);
 
-  // --- Funções de "Refresh" ---
+  // --- Funções de "Refresh" (Públicas) ---
   
   const refreshDadosTransacao = useCallback(() => {
-    if (utilizador) {
-      fetchContas(utilizador.id);
-      fetchTransacoes(utilizador.id);
+    if (usuarioLogado) {
+      fetchContas(usuarioLogado.id);
+      fetchTransacoes(usuarioLogado.id);
     }
-  }, [utilizador, fetchContas, fetchTransacoes]);
+  }, [usuarioLogado, fetchContas, fetchTransacoes]);
   
   const refreshMetas = useCallback(() => {
-    if (utilizador) {
-      fetchMetas(utilizador.id);
+    if (usuarioLogado) {
+      fetchMetas(usuarioLogado.id);
     }
-  }, [utilizador, fetchMetas]);
+  }, [usuarioLogado, fetchMetas]);
 
   const refreshAposTransferencia = useCallback(() => {
-    if (utilizador) {
-      fetchContas(utilizador.id);
-      fetchMetas(utilizador.id);
-      fetchTransacoes(utilizador.id);
+    if (usuarioLogado) {
+      fetchContas(usuarioLogado.id);
+      fetchMetas(usuarioLogado.id);
+      fetchTransacoes(usuarioLogado.id);
     }
-  }, [utilizador, fetchContas, fetchMetas, fetchTransacoes]);
+  }, [usuarioLogado, fetchContas, fetchMetas, fetchTransacoes]);
 
   const refreshContas = useCallback(() => {
-    if (utilizador) {
-      fetchContas(utilizador.id);
+    if (usuarioLogado) {
+      fetchContas(usuarioLogado.id);
     }
-  }, [utilizador, fetchContas]);
+  }, [usuarioLogado, fetchContas]);
 
-  // 1. ADICIONAR A NOVA FUNÇÃO DE REFRESH
   const refreshCategorias = useCallback(() => {
-    if (utilizador) {
-      fetchCategorias(utilizador.id); // Recarrega apenas a lista de categorias
+    if (usuarioLogado) {
+      fetchCategorias(usuarioLogado.id);
     }
-  }, [utilizador, fetchCategorias]);
+  }, [usuarioLogado, fetchCategorias]);
 
 
-  // --- O Efeito Principal ---
+  // --- O Efeito Principal (Vigia o Login) ---
   useEffect(() => {
-    if (utilizador) {
-      const clienteId = utilizador.id;
-      console.log('(DataCtx) A buscar todos os dados para o cliente ID:', clienteId);
+    if (usuarioLogado) {
+      const id = usuarioLogado.id;
+      console.log('🔄 (DataCtx) Login detectado. Buscando dados para ID:', id);
       setLoading(true);
       
       Promise.all([
-        fetchContas(clienteId),
-        fetchMetas(clienteId),
-        fetchTransacoes(clienteId),
-        fetchCategorias(clienteId)
+        fetchContas(id),
+        fetchMetas(id),
+        fetchTransacoes(id),
+        fetchCategorias(id)
       ]).then(() => {
         setLoading(false);
+        console.log('✨ (DataCtx) Dados carregados com sucesso.');
       });
     } else {
+      // Logout: Limpa tudo
+      console.log('👋 (DataCtx) Sem usuário. Limpando dados.');
       setContas([]);
       setMetas([]);
       setTransacoes([]);
       setCategorias([]);
       setLoading(false);
     }
-  }, [utilizador, fetchContas, fetchMetas, fetchTransacoes, fetchCategorias]);
+  }, [usuarioLogado, fetchContas, fetchMetas, fetchTransacoes, fetchCategorias]);
 
   
   // O 'value' é o que partilhamos com toda a app
   const value = {
+    clienteId: usuarioLogado?.id, // <-- Adicionei isto para facilitar o acesso ao ID
     contas,
     metas,
     transacoes,
@@ -136,7 +140,7 @@ export function DataProvider({ children }) {
     refreshMetas,
     refreshAposTransferencia,
     refreshContas,
-    refreshCategorias // 2. EXPOR A NOVA FUNÇÃO
+    refreshCategorias
   };
 
   return (
@@ -146,7 +150,7 @@ export function DataProvider({ children }) {
   );
 }
 
-// 3. Criar o "Consumidor" (Hook)
+// 3. Hook
 export function useData() {
   return useContext(DataContext);
 }

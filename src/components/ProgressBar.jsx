@@ -10,7 +10,7 @@ function ProgressBar({ percentual }) {
       <div 
         className="progress-filler"
         // A largura da barra DEVE ser um estilo inline
-        style={{ width: `${percentualClamped}%` }} 
+        style={{ width: `${percentualClamped}%`, textAlign: 'justfy' }} 
       >
         <span className="progress-label">
           {`${percentualClamped.toFixed(0)}%`}

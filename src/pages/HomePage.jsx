@@ -1,53 +1,80 @@
-// src/pages/HomePage.jsx (COM NOVOS GRÁFICOS E FILTROS)
-
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useData } from '../context/DataContext';
 import ProgressBar from '../components/ProgressBar';
 
-// Imports do Chart.js (completos)
 import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement,
-  LineElement, ArcElement, Title, Tooltip, Legend, Filler // Adiciona Filler para preenchimento
+  LineElement, ArcElement, Title, Tooltip, Legend, Filler 
 } from 'chart.js';
 import { Bar, Line, Doughnut } from 'react-chartjs-2';
-// Imports do Date-fns (completos)
 import { format, parseISO, startOfMonth, endOfMonth, subDays, eachDayOfInterval } from 'date-fns';
 
-// Registar o Chart.js (adiciona Filler)
 ChartJS.register(
   CategoryScale, LinearScale, BarElement, PointElement,
   LineElement, ArcElement, Title, Tooltip, Legend, Filler
 );
 
-// 1. CORREÇÃO (Pizza): Usando as cores multi-coloridas do seu código antigo
 const CORES_GRAFICO = [
   '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
   '#FF9F40', '#E7E9ED', '#8B0000', '#006400', '#00008B'
 ];
 
 function HomePage() {
-  // Puxar TODOS os dados e o 'loading'
-  const { transacoes, categorias, contas, loading } = useData();
+  // --- 1. A PRIMEIRA CORREÇÃO (Pedir a lista de 'metas') ---
+  const { transacoes, categorias, contas, metas, loading } = useData();
 
-  // --- Estados de Filtro (sem mudança) ---
-  const [tipoGrafico, setTipoGrafico] = useState('linha'); // Padrão agora é Linha
+  const [tipoGrafico, setTipoGrafico] = useState('linha');
   const [dateRange, setDateRange] = useState('mesAtual');
   const [dataInicio, setDataInicio] = useState(format(startOfMonth(new Date()), 'yyyy-MM-dd'));
   const [dataFim, setDataFim] = useState(format(endOfMonth(new Date()), 'yyyy-MM-dd'));
   const [tipoFiltro, setTipoFiltro] = useState('DESPESA'); 
   const [categoriaId, setCategoriaId] = useState('todas');
-  const [contaId, setContaId] = useState('todas');
+  
+  const [contasSelecionadas, setContasSelecionadas] = useState([]);
 
+  // --- LÓGICA DE SELEÇÃO PADRÃO ("TODAS") ---
+  const contasValidas = useMemo(() => {
+    if (!contas) return [];
+    return contas.filter(c => {
+       const tipo = c.tipo || c.tipoConta || ''; 
+       return tipo !== 'META' && tipo !== 'CONTA_META'; 
+    });
+  }, [contas]);
 
-  // --- LÓGICA DE CÁLCULO (useMemo) ATUALIZADA ---
+  useEffect(() => {
+    if (!loading && contasValidas.length > 0 && contasSelecionadas.length === 0) {
+      const ids = contasValidas.map(c => c.id);
+      setContasSelecionadas(ids);
+    }
+  }, [loading, contasValidas]);
+
+  const handleCheckboxChange = (id) => {
+    setContasSelecionadas(prev => {
+      if (prev.includes(id)) {
+        return prev.filter(item => item !== id);
+      } else {
+        return [...prev, id];
+      }
+    });
+  };
+
+  const handleSelectAll = (e) => {
+    if (e.target.checked) {
+      setContasSelecionadas(contasValidas.map(c => c.id));
+    } else {
+      setContasSelecionadas([]);
+    }
+  };
+
+  const isAllSelected = contasValidas.length > 0 && contasSelecionadas.length === contasValidas.length;
+
+  // --- LÓGICA DOS GRÁFICOS ---
   const dadosGrafico = useMemo(() => {
-
-    // Guarda de Segurança (previne a tela branca)
+    // ... (toda a lógica dos gráficos permanece igual) ...
     if (loading || !transacoes || !categorias || !contas) {
       return { dataPizza: {}, dataBarras: {}, dataLinha: {} };
     }
 
-    // --- A. Determinar o intervalo de datas ---
     let startDate, endDate;
     const hoje = new Date();
     if (dateRange === 'mesAtual') {
@@ -56,34 +83,30 @@ function HomePage() {
     } else if (dateRange === '7dias') {
       startDate = subDays(hoje, 6);
       endDate = hoje;
-    } else { // 'personalizado'
+    } else { 
       startDate = parseISO(dataInicio);
       endDate = parseISO(dataFim);
     }
-    endDate.setHours(23, 59, 59, 999); // Garante que o dia final é incluído
+    endDate.setHours(23, 59, 59, 999); 
 
-    // --- B. Filtrar transações (baseado nos filtros) ---
-
-    // Filtro Geral (para Gráficos de Barra e Linha)
     const transacoesFiltradasGeral = transacoes.filter(t => {
       if (!t.dataOperacao) return false;
       const dataTransacao = parseISO(t.dataOperacao);
+      
       const inDate = dataTransacao >= startDate && dataTransacao <= endDate;
       const inCategoria = categoriaId === 'todas' || t.categoriaId === categoriaId;
-      const inConta = contaId === 'todas' || t.contaId === contaId;
+      const inConta = contasSelecionadas.includes(t.contaId);
+      
       return inDate && inCategoria && inConta && t.nomeCategoria !== 'Transferências';
     });
 
-    // Filtro Específico (para Gráfico de Pizza)
     const transacoesFiltradasPizza = transacoesFiltradasGeral.filter(t => {
         return tipoFiltro === 'todos' ||
                (tipoFiltro === 'RECEITA' && t.valor > 0) ||
                (tipoFiltro === 'DESPESA' && t.valor < 0);
     });
 
-    // --- C. Calcular os dados para os gráficos ---
-
-    // 1. DADOS PIZZA (Req. 1: Cores diferentes por categoria)
+    // 1. PIZZA
     const pizzaMap = new Map();
     transacoesFiltradasPizza.forEach(t => {
       const nomeCat = t.nomeCategoria || 'Sem Categoria';
@@ -93,11 +116,11 @@ function HomePage() {
       labels: Array.from(pizzaMap.keys()),
       datasets: [{ 
         data: Array.from(pizzaMap.values()), 
-        backgroundColor: CORES_GRAFICO // Usa o array de cores multi-coloridas
+        backgroundColor: CORES_GRAFICO 
       }]
     };
 
-    // 2. DADOS BARRA (Req. 2: Verde/Vermelho)
+    // 2. BARRA
     let totalReceitasFiltro = 0;
     let totalDespesasFiltro = 0;
     transacoesFiltradasGeral.forEach(t => {
@@ -112,22 +135,19 @@ function HomePage() {
       ],
     };
 
-    // 3. DADOS LINHA (Req. 3: Gráfico Único de Saldo Cumulativo)
-
-    // 3a. Calcular o Saldo Inicial (no dia anterior ao 'startDate')
+    // 3. LINHA
     let saldoInicialLinha = 0;
-    const contasFiltradas = contas.filter(c => (contaId === 'todas' || c.id === contaId) && c.tipo === 'CONTA_CORRENTE');
-    contasFiltradas.forEach(c => saldoInicialLinha += c.saldoAbertura);
+    const contasNoFiltro = contas.filter(c => contasSelecionadas.includes(c.id)); 
+    
+    contasNoFiltro.forEach(c => saldoInicialLinha += c.saldoAbertura);
 
     transacoes.filter(t => {
         if (!t.dataOperacao) return false;
-        const inConta = contaId === 'todas' || t.contaId === contaId;
+        const inConta = contasSelecionadas.includes(t.contaId);
         const isBefore = parseISO(t.dataOperacao) < startDate;
-        // (Para o saldo, não filtramos por categoria, apenas por conta)
         return inConta && isBefore;
     }).forEach(t => saldoInicialLinha += t.valor);
 
-    // 3b. Calcular o fluxo diário e o saldo cumulativo
     const diasIntervalo = eachDayOfInterval({ start: startDate, end: endDate });
     const labelsLinha = diasIntervalo.map(dia => format(dia, 'dd/MM'));
     const dadosSaldoLinha = [];
@@ -135,24 +155,24 @@ function HomePage() {
 
     diasIntervalo.forEach(dia => {
         let netDiario = 0;
-        transacoesFiltradasGeral.forEach(t => { // Usa as transações já filtradas
+        transacoesFiltradasGeral.forEach(t => { 
             if (!t.dataOperacao) return;
             if (format(parseISO(t.dataOperacao), 'yyyy-MM-dd') === format(dia, 'yyyy-MM-dd')) {
                 netDiario += t.valor;
             }
         });
         saldoAcumulado += netDiario;
-        dadosSaldoLinha.push(saldoAcumulado.toFixed(2)); // Guarda o saldo do dia
+        dadosSaldoLinha.push(saldoAcumulado.toFixed(2));
     });
 
     const dataLinha = {
       labels: labelsLinha,
       datasets: [{
-        label: 'Evolução do Saldo', 
+        label: 'Evolução do Saldo (Selecionadas)', 
         data: dadosSaldoLinha, 
-        borderColor: 'var(--primary-color)', // Linha verde escura
-        backgroundColor: 'rgba(0, 88, 64, 0.1)', // Preenchimento verde transparente
-        fill: true, // Preenche a área abaixo da linha
+        borderColor: 'var(--primary-color)',
+        backgroundColor: 'rgba(0, 88, 64, 0.1)',
+        fill: true,
         tension: 0.1 
       }]
     };
@@ -160,15 +180,18 @@ function HomePage() {
     return { dataPizza, dataBarras, dataLinha };
 
   }, [
-    transacoes, categorias, contas, loading, // Dados
-    dateRange, dataInicio, dataFim, tipoFiltro, categoriaId, contaId // Filtros
+    transacoes, categorias, contas, loading, 
+    dateRange, dataInicio, dataFim, tipoFiltro, categoriaId, 
+    contasSelecionadas
   ]);
 
-  // --- Lógica das Metas (sem mudança) ---
-  const metas = useMemo(() => {
-      if (loading || !contas) return [];
-      return contas.filter(c => c.tipo === 'META');
-  }, [contas, loading]);
+  // --- 2. A SEGUNDA CORREÇÃO (Remover este bloco) ---
+  /* const metas = useMemo(() => {
+     if (loading || !contas) return [];
+     return contas.filter(c => c.tipo === 'META' || c.tipoConta === 'META' || c.tipo === 'CONTA_META');
+   }, [contas, loading]);
+  */
+  // (A variável 'metas' agora vem diretamente do useData())
 
   const calcularProgressoMeta = (meta) => {
     if (meta.valorAlvo <= 0) return 0;
@@ -176,23 +199,25 @@ function HomePage() {
     return Math.min(Math.max(percentual, 0), 100);
   };
 
-  // --- "Guarda" de Renderização ---
   if (loading) {
     return <div>A carregar dashboard...</div>;
   }
 
-  // --- O JSX (Layout + Filtros + Gráficos + Metas) ---
+  // --- ESTILOS CUSTOMIZADOS ---
+  const themeColor = '#2ecc71'; 
+  const inputBorderColor = '#ced4da'; 
+
   return (
     <div>
       <h2>Dashboard</h2>
 
-      {/* Wrapper para Grid (Gráficos à esquerda, Metas à direita) */}
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px' }}>
 
-        {/* Coluna 1: Filtros e Gráficos */}
+        {/* Coluna 1 */}
         <div>
-          {/* --- 1. OS FILTROS --- */}
+          {/* --- FILTROS --- */}
           <div className="card" style={{ padding: '20px', backgroundColor: 'var(--cor-branco)', marginBottom: '20px' }}>
+            {/* ... (toda a lógica de filtros continua igual) ... */}
             <h4>Filtros do Dashboard</h4>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
 
@@ -206,7 +231,7 @@ function HomePage() {
               </div>
 
               <div className="form-group">
-                <label>Tipo (p/ Gráfico Pizza)</label>
+                <label>Tipo (p/ Pizza)</label>
                 <select className="form-control" value={tipoFiltro} onChange={(e) => setTipoFiltro(e.target.value)}>
                   <option value="DESPESA">Despesas</option>
                   <option value="RECEITA">Receitas</option>
@@ -227,14 +252,77 @@ function HomePage() {
                 </>
               )}
 
-              <div className="form-group">
-                <label>Conta</label>
-                <select className="form-control" value={contaId} onChange={(e) => setContaId(e.target.value)}>
-                  <option value="todas">Todas as Contas</option>
-                  {contas && contas.filter(c => c.tipo === 'CONTA_CORRENTE').map(c => (
-                    <option key={c.id} value={c.id}>{c.nome}</option>
-                  ))}
-                </select>
+              {/* CAMPO DE CONTAS */}
+              <div className="form-group" style={{ gridColumn: '1 / -1' }}> 
+                <label>Contas</label>
+                <div style={{ 
+                    border: `1px solid ${inputBorderColor}`, 
+                    borderRadius: '0.375rem', 
+                    padding: '10px', 
+                    height: 'auto',
+                    maxHeight: '150px',
+                    overflowY: 'auto', 
+                    backgroundColor: '#fff',
+                    boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.075)'
+                }}>
+                  
+                  <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      marginBottom: '8px', 
+                      paddingBottom: '8px', 
+                      borderBottom: '1px solid #eee'
+                  }}>
+                    <input 
+                      type="checkbox" 
+                      id="select-all"
+                      checked={isAllSelected}
+                      onChange={handleSelectAll}
+                      style={{ 
+                          marginRight: '10px', 
+                          width: '16px', 
+                          height: '16px', 
+                          accentColor: themeColor,
+                          cursor: 'pointer'
+                      }}
+                    />
+                    <label htmlFor="select-all" style={{ margin: 0, fontWeight: '600', cursor: 'pointer', color: '#495057', fontSize: '0.95em' }}>
+                      Selecionar Todas
+                    </label>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '5px' }}>
+                    {contasValidas.map(c => (
+                        <div key={c.id} style={{ display: 'flex', alignItems: 'center', padding: '2px 0' }}>
+                        <input 
+                            type="checkbox" 
+                            id={`conta-${c.id}`}
+                            checked={contasSelecionadas.includes(c.id)}
+                            onChange={() => handleCheckboxChange(c.id)}
+                            style={{ 
+                                marginRight: '8px', 
+                                width: '15px', 
+                                height: '15px', 
+                                accentColor: themeColor,
+                                cursor: 'pointer'
+                            }}
+                        />
+                        <label htmlFor={`conta-${c.id}`} style={{ margin: 0, fontSize: '0.9em', cursor: 'pointer', color: '#495057' }}>
+                            {c.nome}
+                        </label>
+                        </div>
+                    ))}
+                  </div>
+                  
+                  {contasValidas.length === 0 && (
+                     <div style={{color: '#dc3545', fontSize: '0.8em', marginTop: '5px'}}>
+                        Nenhuma conta encontrada.
+                     </div>
+                  )}
+                </div>
+                <small className="text-muted" style={{fontSize: '0.75em', marginLeft: '2px', marginTop: '4px', display: 'block'}}>
+                    {contasSelecionadas.length} de {contasValidas.length} contas visíveis
+                </small>
               </div>
 
               <div className="form-group">
@@ -249,25 +337,25 @@ function HomePage() {
             </div>
           </div>
 
-          {/* --- 2. O CARD DE GRÁFICOS --- */}
+          {/* --- GRÁFICOS --- */}
           <div className="card" style={{ padding: '20px', backgroundColor: 'var(--cor-branco)' }}>
+            {/* ... (toda a lógica de gráficos continua igual) ... */}
             <h4>Balanço (com filtros)</h4>
 
-            {/* Botões de seleção do gráfico */}
             <div className="btn-group" role="group">
               <button type="button" className={`btn ${tipoGrafico === 'linha' ? 'btn-home' : 'btn-home'}`} onClick={() => setTipoGrafico('linha')}>
                 Evolução (Linha)
               </button>
               <button type="button" className={`btn ${tipoGrafico === 'barra' ? 'btn-home' : 'btn-home'}`} onClick={() => setTipoGrafico('barra')}>
-                Receita vs Despesa (Barra)
+                Receita vs Despesa 
               </button>
               <button type="button" className={`btn ${tipoGrafico === 'pizza' ? 'btn-home' : 'btn-home'}`} onClick={() => setTipoGrafico('pizza')}>
                 Categorias (Pizza)
               </button>
             </div>
+            <br />
             <hr />
 
-            {/* Renderização dos Gráficos */}
             {tipoGrafico === 'barra' && (
               <div style={{ maxWidth: '800px', margin: 'auto' }}>
                 <Bar data={dadosGrafico.dataBarras} />
@@ -291,21 +379,25 @@ function HomePage() {
           </div>
         </div>
 
-        {/* Coluna 2: Card de Metas (sem mudança) */}
+        {/* Coluna 2: Metas */}
         <div className="card" style={{ padding: '20px', backgroundColor: 'var(--cor-branco)' }}>
-          <h4>Minhas Metas</h4>
+          <h4>Minhas Metas:</h4>
           <ul style={{ listStyle: 'none', padding: 0 }}>
-            {metas.length > 0 ? (
+            {/* A variável 'metas' agora é a correta, vinda do context */}
+            {metas && metas.length > 0 ? ( 
               metas.slice(0, 3).map(meta => {
                 const progresso = calcularProgressoMeta(meta);
                 return (
                   <li key={meta.id} style={{ marginBottom: '15px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
                       <span>{meta.nome}</span>
-                      <span style={{ color: 'var(--info-color)', fontWeight: 'bold' }}>{progresso.toFixed(0)}%</span>
+                      <span style={{ color: 'var(--primary-color)', fontWeight: 'bold' }}>{progresso.toFixed(0)}%</span>
                     </div>
                     <ProgressBar percentual={progresso} />
                     <small>R$ {meta.valorAtual.toFixed(2)} / R$ {meta.valorAlvo.toFixed(2)}</small>
+                    <br />
+                    <br />
+                    <hr />
                   </li>
                 );
               })

@@ -1,24 +1,28 @@
-// src/components/FormCriarTransacao.jsx (COM AS CLASSES GLOBAIS CORRETAS)
-
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useData } from '../context/DataContext';
 import { format } from 'date-fns';
-// 1. REMOVER o import do .module.css
 
 const API_BASE_URL = 'http://localhost:8080/api';
 
-function FormCriarTransacao({ clienteId, contas, categorias, onTransacaoCriada }) {
-  const { refreshCategorias } = useData();
+function FormCriarTransacao({ onTransacaoCriada }) {
+  
+  // --- PEGAR DADOS GLOBAIS ---
+  // Buscamos as contas e categorias direto da "memória" do App (Contexto)
+  const { contas, categorias, clienteId, refreshCategorias } = useData();
 
-  // --- Estados do Formulário (Sua Lógica do Passo 151) ---
+  // --- Estados do Formulário ---
   const [descricao, setDescricao] = useState('');
   const [valor, setValor] = useState('');
   const [tipo, setTipo] = useState('DESPESA');
   const [dataOperacao, setDataOperacao] = useState(format(new Date(), "yyyy-MM-dd'T'HH:mm"));
-  const [contaId, setContaId] = useState(contas && contas.length > 0 ? contas[0].id : '');
+  
+  // 1. O estado começa VAZIO ('') para forçar o utilizador a escolher
+  const [contaId, setContaId] = useState(''); 
+  
   const [categoriaId, setCategoriaId] = useState('');
   const categoriasVisiveis = categorias ? categorias.filter(c => c.nome !== 'Transferências') : [];
+  
   const [novaCategoriaNome, setNovaCategoriaNome] = useState('');
   const [isCreatingCategoria, setIsCreatingCategoria] = useState(false);
 
@@ -33,14 +37,28 @@ function FormCriarTransacao({ clienteId, contas, categorias, onTransacaoCriada }
     }
   };
 
-  // --- handleSubmit (Sua Lógica do Passo 151) ---
+  // --- ENVIO DO FORMULÁRIO ---
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (!valor || !contaId || !dataOperacao) {
-      alert('Por favor, preencha Valor, Conta e Data.');
+    
+    if (!clienteId) {
+      alert("Erro: Cliente não identificado. Tente recarregar a página.");
       return;
     }
+    
+    // 2. Validação reforçada: Se não escolheu conta, bloqueia
+    if (!contaId) {
+      alert('Por favor, selecione uma CONTA antes de salvar.');
+      return;
+    }
+    if (!valor || !dataOperacao) {
+      alert('Por favor, preencha o Valor e a Data.');
+      return;
+    }
+
     let categoriaIdFinal = categoriaId;
+    
+    // Lógica para criar categoria nova na hora
     if (isCreatingCategoria) {
       if (!novaCategoriaNome) {
         alert('Por favor, preencha o nome da nova categoria.');
@@ -65,10 +83,13 @@ function FormCriarTransacao({ clienteId, contas, categorias, onTransacaoCriada }
         return;
       }
     }
+
+    // Converter valor para negativo se for Despesa
     let valorFinal = Math.abs(parseFloat(valor));
     if (tipo === 'DESPESA') {
       valorFinal = valorFinal * -1;
     }
+
     const payloadTransacao = {
       clienteId: clienteId,
       contaId: contaId,
@@ -77,42 +98,49 @@ function FormCriarTransacao({ clienteId, contas, categorias, onTransacaoCriada }
       valor: valorFinal,
       dataOperacao: dataOperacao
     };
+
     try {
       await axios.post(`${API_BASE_URL}/transacoes`, payloadTransacao);
       alert('Transação criada com sucesso!');
-      onTransacaoCriada();
+      
+      if (onTransacaoCriada) {
+        onTransacaoCriada();
+      }
+      
       // Limpar formulário
       setDescricao('');
       setValor('');
       setDataOperacao(format(new Date(), "yyyy-MM-dd'T'HH:mm"));
-      setContaId(contas && contas.length > 0 ? contas[0].id : '');
+      
+      // 3. Reseta para vazio para mostrar "Selecione..." novamente
+      setContaId(''); 
+      
       setCategoriaId('');
       setTipo('DESPESA');
       setIsCreatingCategoria(false);
       setNovaCategoriaNome('');
+
     } catch (error) {
-      alert('Erro ao criar transação: ' + (error.response?.data?.message || error.response?.data));
+      console.error("Erro:", error);
+      alert('Erro ao criar transação: ' + (error.response?.data?.message || "Erro desconhecido"));
     }
   };
 
-  // --- O JSX (HTML) com as classes do FormCriarMeta ---
   return (
-    // 2. A tag <form> não tem classe (igual ao FormCriarMeta)
-    <form onSubmit={handleSubmit}>
+    <form onSubmit={handleSubmit} className="p-3 mb-3 border rounded bg-light">
 
       <h4>Adicionar Receita ou Despesa</h4>
 
-      {/* 3. Aplicar "form-group" aos <div> e "form-control" aos <select> e <input> */}
-      <div className="form-group">
-        <label>Tipo:</label>
+      <div className="form-group mb-3">
+        <label className="form-label">Tipo:</label>
         <select value={tipo} onChange={(e) => setTipo(e.target.value)} className="form-control" required>
           <option value="DESPESA">Despesa</option>
           <option value="RECEITA">Receita</option>
         </select>
       </div>
 
-      <div className="form-group">
-        <label>Valor (R$): </label>
+      <div className="form-group mb-3">
+        <label className="form-label">Valor (R$): </label>
         <input 
           type="number" 
           step="0.01" 
@@ -124,37 +152,44 @@ function FormCriarTransacao({ clienteId, contas, categorias, onTransacaoCriada }
         />
       </div>
 
-      <div className="form-group">
-        <label>Conta: </label>
-        <select value={contaId} onChange={(e) => setContaId(e.target.value)} className="form-control" required>
+      <div className="form-group mb-3">
+        <label className="form-label">Conta: </label>
+        
+        {/* 4. O Dropdown começa na opção disabled "Selecione..." */}
+        <select 
+            value={contaId} 
+            onChange={(e) => setContaId(e.target.value)} 
+            className="form-control" 
+            required
+        >
           <option value="" disabled>Selecione uma conta...</option>
+          
           {contas && contas.length > 0 ? (
             contas.map(conta => (
               <option key={conta.id} value={conta.id}>
-                {conta.nome} (Saldo: {conta.saldoAtual.toFixed(2)})
+                {conta.nome} (Saldo: {conta.saldoAtual ? conta.saldoAtual.toFixed(2) : '0.00'})
               </option>
             ))
           ) : (
-            <option value="" disabled>Nenhuma conta encontrada</option>
+             // Caso a internet esteja lenta ou não haja contas
+             <option value="" disabled>Carregando contas...</option>
           )}
         </select>
       </div>
 
-      <div className="form-group">
-        <label>Categoria: </label>
+      <div className="form-group mb-3">
+        <label className="form-label">Categoria: </label>
         {isCreatingCategoria ? (
-          // (O FormCriarMeta não tem este HTML, mas vamos estilizá-lo de forma parecida)
           <div style={{ display: 'flex', gap: '10px' }}>
             <input
               type="text"
               placeholder="Nome da nova categoria..."
               value={novaCategoriaNome}
               onChange={(e) => setNovaCategoriaNome(e.target.value)}
-              className="form-control" // Usa a mesma classe
+              className="form-control"
             />
             <button 
               type="button" 
-              // Usa as classes de botão (assumindo que 'btn' e 'btn-secondary' existem)
               className="btn btn-secondary" 
               onClick={() => setIsCreatingCategoria(false)}
             >
@@ -169,23 +204,26 @@ function FormCriarTransacao({ clienteId, contas, categorias, onTransacaoCriada }
                 {categoria.nome}
               </option>
             ))}
-            <option value="___NOVA___">+ Nova Categoria...</option>
+            <option value="___NOVA___" style={{ fontWeight: 'bold', color: 'green' }}>
+              + Nova Categoria...
+            </option>
           </select>
         )}
       </div>
 
-      <div className="form-group">
-        <label>Descrição: </label>
+      <div className="form-group mb-3">
+        <label className="form-label">Descrição: </label>
         <input 
           type="text" 
           value={descricao} 
           onChange={(e) => setDescricao(e.target.value)} 
           className="form-control"
+          placeholder="Ex: Almoço, Salário..."
         />
       </div>
 
-      <div className="form-group">
-        <label>Data e Hora: </label>
+      <div className="form-group mb-3">
+        <label className="form-label">Data e Hora: </label>
         <input 
           type="datetime-local" 
           value={dataOperacao} 
@@ -195,7 +233,6 @@ function FormCriarTransacao({ clienteId, contas, categorias, onTransacaoCriada }
         />
       </div>
 
-      {/* 4. Aplicar as classes de botão "btn btn-primary w-100" */}
       <button type="submit" className="btn btn-primary w-100">
         Adicionar Transação
       </button>

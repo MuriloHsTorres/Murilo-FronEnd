@@ -68,8 +68,7 @@ function MainLayout() {
 
         {/* O rodapé da sidebar */}
         <div className={styles.userArea}>
-          <span>Olá, {utilizador.nome}!</span>
-          <button onClick={logout} className="btnSair" style={{ width: '100%' }}>
+          <button onClick={logout} className="btn-sair" style={{ width: '100%' }}>
             Sair
           </button>
         </div>

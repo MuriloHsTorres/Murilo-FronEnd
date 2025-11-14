@@ -42,7 +42,7 @@ function FormCriarConta({ clienteId, onContaCriada }) {
     // Aplicamos as classes de formulário (form-group, form-control, btn)
     <form onSubmit={handleSubmit}>
       <h4>Adicionar Nova Conta</h4>
-
+      <br />
       <div className="form-group">
         <label>Nome da Conta (ex: Nubank, Bradesco)</label>
         <input
