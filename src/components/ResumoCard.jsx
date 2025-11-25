@@ -5,46 +5,43 @@ import React from 'react';
 function ResumoCard({
   title,
   valor,
-  color, // Cor do texto do valor (Ex: var(--receitas-color))
-  backgroundColor, // Cor de fundo do card (Ex: var(--primary-color))
+  color,           // Cor do texto do valor
+  backgroundColor, // Cor de fundo do card
   isExpanded,
   onToggle,
   breakdownMap,
   breakdownKey
 }) {
 
-  // 1. Estilo para o CARD (o div principal)
-  // Usa a prop 'backgroundColor' que recebemos
   const cardStyle = {
-    backgroundColor: backgroundColor
+    backgroundColor: backgroundColor,
+    cursor: 'pointer', // Adicionado para indicar que é clicável
+    transition: 'all 0.3s ease'
   };
 
-  // 2. Estilo para o VALOR (o <p>)
-  // Usa a prop 'color' que já existia
   const valorStyle = {
-    color: color
+    color: color || '#fff' // Se não vier cor, usa branco por defeito
   };
 
   return (
-    // 3. Aplicamos o estilo de fundo no div principal
     <div className="resumo-card" onClick={onToggle} style={cardStyle}>
 
       <h3>{title}</h3>
 
-      {/* 4. Aplicamos o estilo de cor no <p> */}
       <p className="resumo-card-valor" style={valorStyle}>
-        R$ {valor.toFixed(2)}
+        R$ {valor ? valor.toFixed(2) : '0.00'}
       </p>
 
-      {/* O "Breakdown" que expande */}
       {isExpanded && (
         <div className="resumo-card-breakdown">
-          <h4>Contas:</h4>
-
-          {/* Converte o Map para um Array e renderiza */}
-          {Array.from(breakdownMap.entries()).map(([contaNome, data]) => (
-            <div className="breakdown-item" key={contaNome}>
-              <span>{contaNome}:</span>
+          {/* CORREÇÃO AQUI: */}
+          {/* O map devolve [chave, valor]. A chave é o ID, o valor é o objeto com dados */}
+          {Array.from(breakdownMap.entries()).map(([id, data]) => (
+            <div className="breakdown-item" key={id} style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
+              
+              {/* Aqui usamos data.nome em vez da chave id */}
+              <span>{data.nome}:</span>
+              
               <strong>R$ {data[breakdownKey].toFixed(2)}</strong>
             </div>
           ))}
