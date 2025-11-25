@@ -1147,12 +1147,12 @@
 /* Sobrescrevendo o componente ProgressBar para ficar GROSSO */
 /* Assumindo que seu ProgressBar usa uma div externa e interna */
 .meta-progress-wrapper > div { 
-  height: 25px !important; /* Força altura maior */
-  border-radius: 12px !important;
+  height: 26px !important; /* Força altura maior */
+  border-radius: 13px !important;
   background-color: #eee !important;
 }
 .meta-progress-wrapper > div > div {
-  border-radius: 12px !important;
+  border-radius: 13px  !important;
   /* Opcional: Gradiente bonito na barra */
   background: linear-gradient(90deg, #2ecc71, #27ae60) !important; 
 }

@@ -148,7 +148,7 @@ function GerenciadorCategorias() {
           onChange={(e) => setNovoNome(e.target.value)}
           placeholder="Nome da nova categoria"
         />
-        <button type="submit" className="btn btn-primary"> {/* Aplicamos a classe */}
+        <button type="submit" className="btn btn-secondary"> {/* Aplicamos a classe */}
           Adicionar
         </button>
       </form>

@@ -1,64 +1,68 @@
 // src/pages/PerfilPage.jsx
 
 import React, { useState } from 'react';
-import { useAuth } from '../context/AuthContext'; //
+import { useAuth } from '../context/AuthContext'; 
+import { useData } from '../context/DataContext'; 
 import axios from 'axios';
-import GerenciadorCategorias from '../components/GerenciadorCategorias'; //
+import GerenciadorCategorias from '../components/GerenciadorCategorias'; 
 
-const API_BASE_URL = 'http://localhost:8080/api'; //
+const API_BASE_URL = 'http://localhost:8080/api'; 
 
 function PerfilPage() {
-  const { utilizador, login, logout } = useAuth(); //
+  const { utilizador, login, logout } = useAuth(); 
   
-  // --- Estados do formulário de perfil ---
-  const [nome, setNome] = useState(utilizador.nome); //
-  const [email, setEmail] = useState(utilizador.email); //
-  const [senhaAtual, setSenhaAtual] = useState(''); //
-  const [novaSenha, setNovaSenha] = useState(''); //
+  // --- Estados do formulário ---
+  const [nome, setNome] = useState(utilizador ? utilizador.nome : ''); 
+  const [email, setEmail] = useState(utilizador ? utilizador.email : ''); 
+  const [senhaAtual, setSenhaAtual] = useState(''); 
+  const [novaSenha, setNovaSenha] = useState(''); 
 
-  // --- Estados do fluxo de exclusão ---
-  const [deleteStep, setDeleteStep] = useState('idle'); //
-  const [deletePassword, setDeletePassword] = useState(''); //
+  // --- Estados de exclusão ---
+  const [deleteStep, setDeleteStep] = useState('idle'); 
+  const [deletePassword, setDeletePassword] = useState(''); 
 
-  // --- Função de Atualizar Perfil ---
   const handleSubmit = async (event) => {
-    event.preventDefault(); //
+    event.preventDefault(); 
 
     if (!senhaAtual) {
       alert('Por favor, insira a sua senha atual para confirmar as alterações.');
       return;
     }
     
+    // Payload
     const payload = {
       nome: nome,
       email: email,
-      senhaAtual: senhaAtual,
-      novaSenha: novaSenha.length > 0 ? novaSenha : null 
+      senhaAtual: senhaAtual
     };
 
+    if (novaSenha && novaSenha.trim() !== '') {
+        payload.novaSenha = novaSenha;
+    }
+
     try {
-      const response = await axios.put( //
-        `${API_BASE_URL}/clientes/atualizar/${utilizador.id}`, 
+      // --- CORREÇÃO AQUI ---
+      // Removi o "/atualizar". Agora é PUT /api/clientes/{id}
+      const response = await axios.put(
+        `${API_BASE_URL}/clientes/${utilizador.id}`, 
         payload
       );
       
       alert('Perfil atualizado com sucesso!');
       
-      // *** IMPORTANTE ***
-      // Atualiza o 'utilizador' no AuthContext com os novos dados
-      login(response.data); //
+      // Atualiza o contexto global
+      login(response.data); 
 
-      // Limpa os campos de senha
       setSenhaAtual('');
       setNovaSenha('');
 
     } catch (error) {
       console.error('Erro ao atualizar perfil:', error);
-      alert('Erro ao atualizar: ' + (error.response?.data || 'Erro desconhecido.'));
+      const msg = error.response?.data?.message || error.response?.data || 'Erro desconhecido.';
+      alert('Erro ao atualizar: ' + msg);
     }
   };
 
-  // --- Função de Excluir Conta ---
   const handleDeleteAccount = async () => {
     if (!deletePassword) {
       alert('Por favor, digite sua senha para confirmar.');
@@ -66,31 +70,33 @@ function PerfilPage() {
     }
 
     try {
-      await axios.delete(`${API_BASE_URL}/clientes/deletar/${utilizador.id}`, {
-        data: { senha: deletePassword } // Envia a senha no corpo da requisição DELETE
+      // --- CORREÇÃO AQUI TAMBÉM ---
+      // Removi o "/deletar". Agora é DELETE /api/clientes/{id}
+      await axios.delete(`${API_BASE_URL}/clientes/${utilizador.id}`, {
+        data: { senha: deletePassword } 
       });
       
-      alert('Conta excluída com sucesso. Estamos a sentir a sua falta!');
-      logout(); // Faz o logout do utilizador
+      alert('Conta excluída com sucesso. Sentiremos sua falta!');
+      logout(); 
       
     } catch (error) {
       console.error('Erro ao excluir conta:', error);
-      alert('Erro ao excluir conta: ' + (error.response?.data || 'Senha incorreta.'));
+      const msg = error.response?.data?.message || error.response?.data || 'Erro ao excluir.';
+      alert('Falha na exclusão: ' + msg);
     }
   };
 
-  // --- O NOVO JSX ESTILIZADO ---
+  if (!utilizador) return <div>Carregando perfil...</div>;
+
   return (
     <>
-      {/* 1. Cabeçalho da Página */}
       <div className="page-header">
         <h2>Gestão de Perfil</h2>
       </div>
 
-      {/* 2. Grid de Conteúdo */}
       <div className="perfil-grid">
         
-        {/* 3. Card do Formulário de Perfil */}
+        {/* Card do Formulário */}
         <div className="card perfil-form-card">
           <form onSubmit={handleSubmit}>
             <h4>Atualizar Meus Dados</h4>
@@ -124,7 +130,7 @@ function PerfilPage() {
             </p>
 
             <div className="form-group">
-              <label>Senha Atual (Obrigatória para salvar):</label>
+              <label>Senha Atual (Obrigatória):</label>
               <input
                 type="password"
                 className="form-control"
@@ -135,13 +141,13 @@ function PerfilPage() {
             </div>
             
             <div className="form-group">
-              <label>Nova Senha (Deixe em branco para não alterar):</label>
+              <label>Nova Senha (Opcional):</label>
               <input
                 type="password"
                 className="form-control"
                 value={novaSenha}
                 onChange={(e) => setNovaSenha(e.target.value)}
-                placeholder="Digite sua nova senha..."
+                placeholder="Deixe em branco para manter a atual"
               />
             </div>
             
@@ -151,82 +157,59 @@ function PerfilPage() {
           </form>
         </div>
 
-        {/* 4. Card do Gerenciador de Categorias */}
+        {/* Card de Categorias */}
         <div className="card perfil-categorias-card">
           <h4>Gerenciador de Categorias</h4>
           <p style={{ fontSize: '0.9rem', color: '#6c757d', marginBottom: '1rem' }}>
             Adicione ou remova as categorias de transação.
           </p>
-          {/* O componente é renderizado aqui dentro */}
           <GerenciadorCategorias />
         </div>
 
-        {/* 5. Zona de Perigo (Ocupa as 2 colunas) */}
-        <div className="perfil-danger-zone">
-          <div className="card-danger-outline">
-            <h4>Zona de Perigo</h4>
+        {/* Zona de Perigo */}
+        <div className="perfil-danger-zone"  style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', marginTop: '20px'}}>
+          <div style={{width: '100%', maxWidth: '500px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end'}}>
             
-            {/* Passo 1: Botão inicial */}
             {deleteStep === 'idle' && (
-              <button
+              <button 
                 onClick={() => setDeleteStep('confirm')}
-                className="btn btn-danger"
+                className="btn-sair"
                 type="button"
+                style={{ backgroundColor: '#fff', border: '1px solid #dc3545', color: '#dc3545' }}
               >
-                Excluir Minha Conta
+                Excluir Conta
               </button>
             )}
 
-            {/* Passo 2: Confirmação */}
             {deleteStep === 'confirm' && (
-              <div>
-                <p><strong>Tem a certeza absoluta?</strong> Esta ação é irreversível e todos os seus dados (contas, transações, metas) serão perdidos.</p>
-                <button
-                  onClick={() => setDeleteStep('password')}
-                  className="btn btn-danger"
-                  type="button"
-                  style={{ marginRight: '10px' }}
-                >
-                  Sim, tenho certeza e quero excluir
-                </button>
-                <button 
-                  onClick={() => setDeleteStep('idle')} 
-                  className="btn btn-secondary" 
-                  type="button"
-                >
-                  Não, cancelar
-                </button>
+              <div className="alert alert-danger" style={{ textAlign: 'right' }}>
+                <p><strong>Tem a certeza absoluta?</strong><br/>Isso apagará tudo permanentemente.</p>
+                <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '10px' }}>
+                    <button onClick={() => setDeleteStep('idle')} className="btn btn-secondary">
+                        Cancelar
+                    </button>
+                    <button onClick={() => setDeleteStep('password')} className="btn btn-danger">
+                        Sim, continuar
+                    </button>
+                </div>
               </div>
             )}
 
-            {/* Passo 3: Digitar a senha */}
             {deleteStep === 'password' && (
-              <div>
-                <p>Para confirmar esta ação, digite sua senha atual:</p>
-                <div className="form-group">
-                  <label>Senha Atual:</label>
-                  <input
+              <div className="card p-3" style={{ border: '1px solid #dc3545', width: '100%' }}>
+                <p className="text-danger">Digite sua senha para confirmar a exclusão:</p>
+                <input
                     type="password"
-                    className="form-control"
+                    className="form-control mb-2"
                     value={deletePassword}
                     onChange={(e) => setDeletePassword(e.target.value)}
-                    placeholder="Sua senha atual"
-                  />
-                </div>
-                <button
-                  onClick={handleDeleteAccount}
-                  className="btn btn-danger w-100"
-                  type="button"
-                >
-                  CONFIRMAR EXCLUSÃO PERMANENTE
+                    placeholder="Sua senha"
+                />
+                <button onClick={handleDeleteAccount} className="btn btn-danger w-100 mb-2">
+                    CONFIRMAR EXCLUSÃO
                 </button>
-                <button 
-                  onClick={() => setDeleteStep('idle')} 
-                  className="btn btn-secondary w-100" 
-                  type="button"
-                  style={{ marginTop: '10px' }}
-                >
-                  Cancelar
+                <button onClick={() => setDeleteStep('idle')} className="btn btn-secondary w-100">
+                    Cancelar
                 </button>
               </div>
             )}
