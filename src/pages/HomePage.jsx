@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useData } from '../context/DataContext';
-import ProgressBar from '../components/ProgressBar';
+// Não precisamos mais do ProgressBar simples, vamos desenhar o customizado aqui
+// import ProgressBar from '../components/ProgressBar'; 
 
 import {
   Chart as ChartJS, CategoryScale, LinearScale, BarElement, PointElement,
@@ -20,7 +21,6 @@ const CORES_GRAFICO = [
 ];
 
 function HomePage() {
-  // --- 1. A PRIMEIRA CORREÇÃO (Pedir a lista de 'metas') ---
   const { transacoes, categorias, contas, metas, loading } = useData();
 
   const [tipoGrafico, setTipoGrafico] = useState('linha');
@@ -70,7 +70,6 @@ function HomePage() {
 
   // --- LÓGICA DOS GRÁFICOS ---
   const dadosGrafico = useMemo(() => {
-    // ... (toda a lógica dos gráficos permanece igual) ...
     if (loading || !transacoes || !categorias || !contas) {
       return { dataPizza: {}, dataBarras: {}, dataLinha: {} };
     }
@@ -185,14 +184,6 @@ function HomePage() {
     contasSelecionadas
   ]);
 
-  // --- 2. A SEGUNDA CORREÇÃO (Remover este bloco) ---
-  /* const metas = useMemo(() => {
-     if (loading || !contas) return [];
-     return contas.filter(c => c.tipo === 'META' || c.tipoConta === 'META' || c.tipo === 'CONTA_META');
-   }, [contas, loading]);
-  */
-  // (A variável 'metas' agora vem diretamente do useData())
-
   const calcularProgressoMeta = (meta) => {
     if (meta.valorAlvo <= 0) return 0;
     const percentual = (meta.valorAtual / meta.valorAlvo) * 100;
@@ -213,11 +204,10 @@ function HomePage() {
 
       <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '20px' }}>
 
-        {/* Coluna 1 */}
+        {/* Coluna 1: Filtros e Gráficos */}
         <div>
           {/* --- FILTROS --- */}
           <div className="card" style={{ padding: '20px', backgroundColor: 'var(--cor-branco)', marginBottom: '20px' }}>
-            {/* ... (toda a lógica de filtros continua igual) ... */}
             <h4>Filtros do Dashboard</h4>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
 
@@ -252,7 +242,6 @@ function HomePage() {
                 </>
               )}
 
-              {/* CAMPO DE CONTAS */}
               <div className="form-group" style={{ gridColumn: '1 / -1' }}> 
                 <label>Contas</label>
                 <div style={{ 
@@ -265,60 +254,25 @@ function HomePage() {
                     backgroundColor: '#fff',
                     boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.075)'
                 }}>
-                  
-                  <div style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      marginBottom: '8px', 
-                      paddingBottom: '8px', 
-                      borderBottom: '1px solid #eee'
-                  }}>
-                    <input 
-                      type="checkbox" 
-                      id="select-all"
-                      checked={isAllSelected}
-                      onChange={handleSelectAll}
-                      style={{ 
-                          marginRight: '10px', 
-                          width: '16px', 
-                          height: '16px', 
-                          accentColor: themeColor,
-                          cursor: 'pointer'
-                      }}
-                    />
+                  <div style={{ display: 'flex', alignItems: 'center', marginBottom: '8px', paddingBottom: '8px', borderBottom: '1px solid #eee' }}>
+                    <input type="checkbox" id="select-all" checked={isAllSelected} onChange={handleSelectAll}
+                      style={{ marginRight: '10px', width: '16px', height: '16px', accentColor: themeColor, cursor: 'pointer' }} />
                     <label htmlFor="select-all" style={{ margin: 0, fontWeight: '600', cursor: 'pointer', color: '#495057', fontSize: '0.95em' }}>
                       Selecionar Todas
                     </label>
                   </div>
-
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '5px' }}>
                     {contasValidas.map(c => (
                         <div key={c.id} style={{ display: 'flex', alignItems: 'center', padding: '2px 0' }}>
-                        <input 
-                            type="checkbox" 
-                            id={`conta-${c.id}`}
-                            checked={contasSelecionadas.includes(c.id)}
-                            onChange={() => handleCheckboxChange(c.id)}
-                            style={{ 
-                                marginRight: '8px', 
-                                width: '15px', 
-                                height: '15px', 
-                                accentColor: themeColor,
-                                cursor: 'pointer'
-                            }}
-                        />
+                        <input type="checkbox" id={`conta-${c.id}`} checked={contasSelecionadas.includes(c.id)} onChange={() => handleCheckboxChange(c.id)}
+                            style={{ marginRight: '8px', width: '15px', height: '15px', accentColor: themeColor, cursor: 'pointer' }} />
                         <label htmlFor={`conta-${c.id}`} style={{ margin: 0, fontSize: '0.9em', cursor: 'pointer', color: '#495057' }}>
                             {c.nome}
                         </label>
                         </div>
                     ))}
                   </div>
-                  
-                  {contasValidas.length === 0 && (
-                     <div style={{color: '#dc3545', fontSize: '0.8em', marginTop: '5px'}}>
-                        Nenhuma conta encontrada.
-                     </div>
-                  )}
+                  {contasValidas.length === 0 && <div style={{color: '#dc3545', fontSize: '0.8em', marginTop: '5px'}}>Nenhuma conta encontrada.</div>}
                 </div>
                 <small className="text-muted" style={{fontSize: '0.75em', marginLeft: '2px', marginTop: '4px', display: 'block'}}>
                     {contasSelecionadas.length} de {contasValidas.length} contas visíveis
@@ -339,65 +293,67 @@ function HomePage() {
 
           {/* --- GRÁFICOS --- */}
           <div className="card" style={{ padding: '20px', backgroundColor: 'var(--cor-branco)' }}>
-            {/* ... (toda a lógica de gráficos continua igual) ... */}
             <h4>Balanço (com filtros)</h4>
-
             <div className="btn-group" role="group">
-              <button type="button" className={`btn ${tipoGrafico === 'linha' ? 'btn-home' : 'btn-home'}`} onClick={() => setTipoGrafico('linha')}>
-                Evolução (Linha)
-              </button>
-              <button type="button" className={`btn ${tipoGrafico === 'barra' ? 'btn-home' : 'btn-home'}`} onClick={() => setTipoGrafico('barra')}>
-                Receita vs Despesa 
-              </button>
-              <button type="button" className={`btn ${tipoGrafico === 'pizza' ? 'btn-home' : 'btn-home'}`} onClick={() => setTipoGrafico('pizza')}>
-                Categorias (Pizza)
-              </button>
+              <button type="button" className={`btn ${tipoGrafico === 'linha' ? 'btn-home' : 'btn-home'}`} onClick={() => setTipoGrafico('linha')}>Evolução (Linha)</button>
+              <button type="button" className={`btn ${tipoGrafico === 'barra' ? 'btn-home' : 'btn-home'}`} onClick={() => setTipoGrafico('barra')}>Receita vs Despesa</button>
+              <button type="button" className={`btn ${tipoGrafico === 'pizza' ? 'btn-home' : 'btn-home'}`} onClick={() => setTipoGrafico('pizza')}>Categorias (Pizza)</button>
             </div>
-            <br />
-            <hr />
-
-            {tipoGrafico === 'barra' && (
-              <div style={{ maxWidth: '800px', margin: 'auto' }}>
-                <Bar data={dadosGrafico.dataBarras} />
-              </div>
-            )}
-            {tipoGrafico === 'linha' && (
-              <div style={{ maxWidth: '800px', margin: 'auto' }}>
-                <Line data={dadosGrafico.dataLinha} />
-              </div>
-            )}
+            <br /><hr />
+            {tipoGrafico === 'barra' && <div style={{ maxWidth: '800px', margin: 'auto' }}><Bar data={dadosGrafico.dataBarras} /></div>}
+            {tipoGrafico === 'linha' && <div style={{ maxWidth: '800px', margin: 'auto' }}><Line data={dadosGrafico.dataLinha} /></div>}
             {tipoGrafico === 'pizza' && (
               <div style={{ maxWidth: '450px', margin: 'auto' }}>
                 <h5>{tipoFiltro === 'RECEITA' ? 'Receitas' : (tipoFiltro === 'DESPESA' ? 'Despesas' : 'Geral')} por Categoria</h5>
-                {dadosGrafico.dataPizza.labels && dadosGrafico.dataPizza.labels.length > 0 ? (
-                  <Doughnut data={dadosGrafico.dataPizza} />
-                ) : (
-                  <p>Nenhum dado encontrado para os filtros selecionados.</p>
-                )}
+                {dadosGrafico.dataPizza.labels && dadosGrafico.dataPizza.labels.length > 0 ? 
+                  <Doughnut data={dadosGrafico.dataPizza} /> : <p>Nenhum dado encontrado para os filtros selecionados.</p>
+                }
               </div>
             )}
           </div>
         </div>
 
-        {/* Coluna 2: Metas */}
+        {/* --- Coluna 2: Metas (ESTILO ATUALIZADO) --- */}
         <div className="card" style={{ padding: '20px', backgroundColor: 'var(--cor-branco)' }}>
           <h4>Minhas Metas:</h4>
           <ul style={{ listStyle: 'none', padding: 0 }}>
-            {/* A variável 'metas' agora é a correta, vinda do context */}
             {metas && metas.length > 0 ? ( 
               metas.slice(0, 3).map(meta => {
                 const progresso = calcularProgressoMeta(meta);
                 return (
-                  <li key={meta.id} style={{ marginBottom: '15px' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '5px' }}>
-                      <span>{meta.nome}</span>
-                      <span style={{ color: 'var(--primary-color)', fontWeight: 'bold' }}>{progresso.toFixed(0)}%</span>
+                  <li key={meta.id} style={{ marginBottom: '25px' }}>
+                    {/* 1. CABEÇALHO: Título na esquerda, Valores na direita */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '8px' }}>
+                      <span style={{ fontWeight: 'bold', fontSize: '1.1em', color: '#333' }}>{meta.nome}</span>
+                      
+                      <div style={{ textAlign: 'right', fontSize: '0.85em' }}>
+                         <span style={{ color: '#2ecc71', fontWeight: 'bold' }}>R$ {meta.valorAtual.toFixed(2)}</span>
+                         <span style={{ color: '#999' }}> / R$ {meta.valorAlvo.toFixed(2)}</span>
+                      </div>
                     </div>
-                    <ProgressBar percentual={progresso} />
-                    <small>R$ {meta.valorAtual.toFixed(2)} / R$ {meta.valorAlvo.toFixed(2)}</small>
-                    <br />
-                    <br />
-                    <hr />
+
+                    {/* 2. BARRA GROSSA COM GRADIENTE */}
+                    <div style={{ 
+                        height: '25px', 
+                        backgroundColor: '#eee', 
+                        borderRadius: '12px', 
+                        overflow: 'hidden',
+                        position: 'relative'
+                    }}>
+                        <div style={{ 
+                            width: `${progresso}%`, 
+                            height: '100%', 
+                            background: 'linear-gradient(90deg, #2ecc71, #27ae60)', 
+                            borderRadius: '12px',
+                            transition: 'width 0.6s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center'
+                        }}>
+                            {/* Opcional: Se quiser o % dentro da barra, descomente abaixo */}
+                            {/* <span style={{ color: '#fff', fontSize: '0.75em', fontWeight: 'bold' }}>{progresso.toFixed(0)}%</span> */}
+                        </div>
+                    </div>
                   </li>
                 );
               })

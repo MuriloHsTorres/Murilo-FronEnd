@@ -167,28 +167,30 @@ function PerfilPage() {
         </div>
 
         {/* Zona de Perigo */}
-        <div className="perfil-danger-zone"  style={{ width: '100%', display: 'flex', justifyContent: 'flex-end', marginTop: '20px'}}>
-          <div style={{width: '100%', maxWidth: '500px', display: 'flex', flexDirection: 'column', alignItems: 'flex-end'}}>
+        <div className="perfil-danger-zone"  style={{ width: '100%', display: 'flex', justifyContent: 'flex-end'}}>
+          <div style={{width: '50%', display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
             
             {deleteStep === 'idle' && (
               <button 
                 onClick={() => setDeleteStep('confirm')}
                 className="btn-sair"
                 type="button"
-                style={{ backgroundColor: '#fff', border: '1px solid #dc3545', color: '#dc3545' }}
+                style={{ width: '90%',}}
               >
                 Excluir Conta
               </button>
             )}
 
             {deleteStep === 'confirm' && (
-              <div className="alert alert-danger" style={{ textAlign: 'right' }}>
+              <div className="alert alert-danger" style={{ textAlign: 'center', fontSize: '17px'}}>
                 <p><strong>Tem a certeza absoluta?</strong><br/>Isso apagará tudo permanentemente.</p>
-                <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end', marginTop: '10px' }}>
-                    <button onClick={() => setDeleteStep('idle')} className="btn btn-secondary">
+                <div style={{ display: 'flex', gap: '20px', justifyContent: 'flex-end', marginTop: '20px' }}>
+                    <button style={{width: '40%'}}
+                     onClick={() => setDeleteStep('idle')} className="btn btn-secondary">
                         Cancelar
                     </button>
-                    <button onClick={() => setDeleteStep('password')} className="btn btn-danger">
+                    <button style={{height:'56px', width: '60%'}}
+                    onClick={() => setDeleteStep('password')} className="btn btn-sair">
                         Sim, continuar
                     </button>
                 </div>
