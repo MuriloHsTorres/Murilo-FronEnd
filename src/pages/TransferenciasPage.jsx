@@ -70,8 +70,12 @@ function TransferenciasPage() {
   // --- JSX (sem mudança, usa as classes globais) ---
   return (
     <div>
+      <br /><br />
       <h2>Transferência entre Contas</h2>
+      <br /><br />
+      <hr />
 
+      <br />
       <form onSubmit={handleSubmit}>
 
         <div className="form-group">
